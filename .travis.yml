@@ -1,21 +1,20 @@
-language: python
-python:
-  - 2.6
-  - 2.7
-  - 3.3
-  - 3.4
-cache:
-  directories:
-    - dante-1.4.0
+branches:
+  only:
+  - cron
+env:
+  - CI=false
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq build-essential dnsutils iproute nginx bc
-  - sudo dd if=/dev/urandom of=/usr/share/nginx/www/file bs=1M count=10
-  - sudo sh -c "echo '127.0.0.1    localhost' > /etc/hosts"
-  - sudo service nginx restart
-  - pip install pep8 pyflakes nose coverage PySocks cymysql
-  - sudo tests/socksify/install.sh
-  - sudo tests/libsodium/install.sh
-  - sudo tests/setup_tc.sh
+  - git config --global user.name "Travis CI"
+  - git config --global user.email "deploy@travis-ci.org"
+  - git remote add icebase https://github.com/icebase/shadowsocks.git
+  - git remote add shadowsocksrr https://github.com/shadowsocksrr/shadowsocksr.git
 script:
-  - tests/jenkins.sh
+  - git fetch icebase
+  - git fetch shadowsocksrr
+  - git push --force https://$REPO_TOKEN@github.com/cool2645/shadowsocksrr.git 'refs/remotes/icebase/*:refs/heads/icebase/*'
+  - git push --force https://$REPO_TOKEN@github.com/cool2645/shadowsocksrr.git 'refs/remotes/shadowsocksrr/*:refs/heads/shadowsocksrr/*'
+  - git merge icebase/manyuser -m "Merge branch 'icebase/manyuser' into ssrr-mu"
+  - git merge shadowsocksrr/akkariiin/dev -m "Merge branch 'shadowsocksrr/akkariiin/dev' into ssrr-mu"
+after_success:
+  - git checkout -b ssrr-mu
+  - git push --force https://$REPO_TOKEN@github.com/cool2645/shadowsocksrr.git ssrr-mu:ssrr-mu
