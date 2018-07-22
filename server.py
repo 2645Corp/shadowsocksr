@@ -19,6 +19,8 @@ import time
 import sys
 import threading
 import os
+import apiconfig
+import config
 
 if __name__ == '__main__':
 	import inspect
@@ -43,13 +45,17 @@ class MainThread(threading.Thread):
 
 def main():
 	shell.check_python()
+	api_interface = config.API_INTERFACE
 	if False:
 		db_transfer.DbTransfer.thread_db()
 	else:
-		if get_config().API_INTERFACE == 'mudbjson':
+		if api_interface == apiconfig.MUDB_FILE:
 			thread = MainThread(db_transfer.MuJsonTransfer)
-		elif get_config().API_INTERFACE == 'sspanelv2':
+		elif api_interface == apiconfig.SSPANEL_V2:
 			thread = MainThread(db_transfer.DbTransfer)
+		elif api_interface == apiconfig.MUAPI_V2:
+			import mu
+			thread = MainThread(mu.MuApiTransfer)
 		else:
 			thread = MainThread(db_transfer.Dbv3Transfer)
 		thread.start()
