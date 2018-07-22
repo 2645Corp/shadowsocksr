@@ -22,6 +22,13 @@ import logging
 
 
 def find_library_nt(name):
+    # type: (str) -> list
+    """
+    find lib in windows in all the directory in path env
+
+    :param name: can end with `.dll` or not
+    :return: lib results list
+    """
     # modified from ctypes.util
     # ctypes.util.find_library just returns first result he found
     # but we want to try them all
@@ -61,7 +68,9 @@ def find_library(possible_lib_names, search_symbol, library_name):
             if path:
                 paths.append(path)
 
-    if not paths:
+    # always find lib on extend path that to avoid ```CDLL()``` failed on some strange linux environment
+    # in that case ```ctypes.util.find_library()``` have different find path from ```CDLL()```
+    if True:
         # We may get here when find_library fails because, for example,
         # the user does not have sufficient privileges to access those
         # tools underlying find_library on linux.

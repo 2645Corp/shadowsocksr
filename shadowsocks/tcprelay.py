@@ -266,7 +266,7 @@ class TCPRelayHandler(object):
     def _create_encryptor(self, config):
         try:
             self._encryptor = encrypt.Encryptor(config['password'],
-                                                config['method'])
+                                                config['method'], None, True)
             return True
         except Exception:
             self._stage = STAGE_DESTROYED
@@ -490,7 +490,6 @@ class TCPRelayHandler(object):
             return host_port[((hash_code & 0xffffffff) + addr) % len(host_port)]
 
         else:
-            host_port = []
             for host in host_list:
                 items_sum = common.to_str(host).rsplit('#', 1)
                 items_match = common.to_str(items_sum[0]).rsplit(':', 1)
@@ -1162,12 +1161,19 @@ class TCPRelayHandler(object):
         if self._protocol:
             self._protocol.dispose()
             self._protocol = None
-        self._encryptor = None
+
+        if self._encryptor:
+            self._encryptor.dispose()
+            self._encryptor = None
         self._dns_resolver.remove_callback(self._handle_dns_resolved)
         self._server.remove_handler(self)
         if self._add_ref > 0:
             self._server.add_connection(-1)
             self._server.stat_add(self._client_address[0], -1)
+
+        #import gc
+        #gc.collect()
+        #logging.debug("gc %s" % (gc.garbage,))
 
 class TCPRelay(object):
     def __init__(self, config, dns_resolver, is_local, stat_callback=None, stat_counter=None):

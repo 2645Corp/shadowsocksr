@@ -162,7 +162,7 @@ class UDPRelay(object):
         self.server_user_transfer_ul = {}
         self.server_user_transfer_dl = {}
 
-        if common.to_bytes(config['protocol']) in obfs.mu_protocol():
+        if common.to_str(config['protocol']) in obfs.mu_protocol():
             self._update_users(None, None)
 
         self.protocol_data = obfs.obfs(config['protocol']).init_data()
@@ -213,6 +213,8 @@ class UDPRelay(object):
         server_socket = socket.socket(af, socktype, proto)
         server_socket.bind((self._listen_addr, self._listen_port))
         server_socket.setblocking(False)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 1024 * 1024)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 1024 * 1024)
         self._server_socket = server_socket
         self._stat_callback = stat_callback
 
